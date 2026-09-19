@@ -27,7 +27,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '127.0.0.1';
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
-const PAGE_FILE = path.join(__dirname, 'new (1).html');
+const PAGE_FILE = path.join(__dirname, 'index.html');
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 
 const SESSION_COOKIE = 'pt_session';
