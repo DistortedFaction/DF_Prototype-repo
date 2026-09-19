@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title> College Placement Tracker</title>
+
+  <style>
+    /* ---------------------------------------------------------------
+       Theme tokens (colours used everywhere below)
+       --------------------------------------------------------------- */
+    :root {
+      --color-background: #f6f3ea;
+      --color-card: #fff;
+      --color-text: #1b1a16;
+      --color-muted-text: #6c675a;
+      --color-border: #e2dccb;
+      --color-gold: #a67c00;
+      --color-success: #15803d;
+      --color-danger: #c2410c;
+      --color-input-background: #faf7ee;
+      --color-text-on-gold: #fff;
+    }
+
+    /* Dark palette when the OS asks for it (unless the page is forced light) */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --color-background: #070707;
+        --color-card: #141414;
+        --color-text: #f1efe8;
+        --color-muted-text: #9a968a;
+        --color-border: #2b2619;
+        --color-gold: #d4af37;
+        --color-success: #4ade80;
+        --color-danger: #fb923c;
+        --color-input-background: #0e0e0e;
+        --color-text-on-gold: #111;
+      }
+    }
+
+    /* Dark palette when the page is explicitly set to dark */
+    :root[data-theme="dark"] {
+      --color-background: #070707;
+      --color-card: #141414;
+      --color-text: #f1efe8;
+      --color-muted-text: #9a968a;
+      --color-border: #2b2619;
+      --color-gold: #d4af37;
+      --color-success: #4ade80;
+      --color-danger: #fb923c;
+      --color-input-background: #0e0e0e;
+      --color-text-on-gold: #111;
+    }
+
+    /* ---------------------------------------------------------------
+       Base
+       --------------------------------------------------------------- */
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      background: var(--color-background);
+      color: var(--color-text);
+      font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* page-wrap = centred max-width wrapper used inside header/main/footer */
+    .page-wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ---------------------------------------------------------------
+       Header and headings
+       --------------------------------------------------------------- */
+    header {
+      border-bottom: 1px solid var(--color-border);
+      padding: 14px 0;
+    }
+
+    header .page-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    header small {
+      color: var(--color-muted-text);
+    }
+
+    .logo {
+      font: 700 20px Georgia, serif;
+    }
+
+    .logo i {
+      color: var(--color-gold);
+      font-style: normal;
+    }
+
+    h1 {
+      font: 700 clamp(30px, 5vw, 50px)/1.1 Georgia, "Times New Roman", serif;
+      margin: 44px 0 12px;
+      max-width: 16em;
+    }
+
+    h2 {
+      font: 700 21px Georgia, serif;
+      margin: 0 0 14px;
+    }
+
+    .subtitle {
+      color: var(--color-muted-text);
+      max-width: 40em;
+      margin: 0 0 28px;
+    }
+
+    /* ---------------------------------------------------------------
+       Cards and layout
+       --------------------------------------------------------------- */
+    .card {
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    /* two-column grid that collapses on narrow screens */
+    .two-column-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    /* ---------------------------------------------------------------
+       Upload drop zone
+       --------------------------------------------------------------- */
+    .drop-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: 12px;
+      padding: 26px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--color-input-background);
+      transition: border-color .2s;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--color-gold);
+    }
+
+    .drop-zone b {
+      display: block;
+      font-size: 16px;
+    }
+
+    .drop-zone span {
+      color: var(--color-muted-text);
+      font-size: 13px;
+    }
+
+    /* file-name / status line under the drop zone */
+    #fileStatus {
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: var(--color-success);
+      min-height: 20px;
+    }
+
+    /* ---------------------------------------------------------------
+       Form controls
+       --------------------------------------------------------------- */
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin: 0 0 6px;
+    }
+
+    textarea,
+    select,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      background: var(--color-input-background);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .primary-button {
+      background: var(--color-gold);
+      color: var(--color-text-on-gold);
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 22px;
+      font: 600 15px inherit;
+      cursor: pointer;
+    }
+
+    .primary-button:hover {
+      filter: brightness(1.1);
+    }
+
+    /* text button that looks like a link */
+    .link-button {
+      background: none;
+      border: 0;
+      color: var(--color-gold);
+      cursor: pointer;
+      font: inherit;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--color-gold);
+      outline-offset: 2px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    #errorMessage {
+      color: var(--color-danger);
+      font-size: 14px;
+    }
+
+    /* ---------------------------------------------------------------
+       Score ring
+       --------------------------------------------------------------- */
+    .score-layout {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 26px;
+      align-items: center;
+    }
+
+    @media (max-width: 620px) {
+      .score-layout {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+      }
+    }
+
+    .score-ring {
+      position: relative;
+      width: 180px;
+      height: 180px;
+    }
+
+    /* rotate so the arc starts at 12 o'clock */
+    .score-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .score-ring b {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      font: 700 44px Georgia, serif;
+    }
+
+    .score-ring b small {
+      font: 13px system-ui;
+      color: var(--color-muted-text);
+    }
+
+    /* ---------------------------------------------------------------
+       Skill chips
+       --------------------------------------------------------------- */
+    .skill-chip {
+      display: inline-block;
+      padding: 3px 11px;
+      border-radius: 99px;
+      font-size: 13px;
+      margin: 0 6px 6px 0;
+      border: 1px solid;
+    }
+
+    .skill-chip.have-it {
+      color: var(--color-success);
+      border-color: var(--color-success);
+    }
+
+    .skill-chip.missing {
+      color: var(--color-danger);
+      border-color: var(--color-danger);
+    }
+
+    /* ---------------------------------------------------------------
+       Selectable bar rows (company list, role ranking)
+       --------------------------------------------------------------- */
+    .option-bar {
+      display: grid;
+      grid-template-columns: minmax(120px, 220px) 1fr 44px;
+      gap: 10px;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .option-bar:hover {
+      border-color: var(--color-border);
+    }
+
+    .option-bar.selected {
+      border-color: var(--color-gold);
+    }
+
+    /* "start here" badge */
+    .option-bar em {
+      font-style: normal;
+      font-size: 11px;
+      color: var(--color-gold);
+      border: 1px solid var(--color-gold);
+      border-radius: 99px;
+      padding: 0 7px;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+
+    /* the progress track */
+    .option-bar div {
+      height: 9px;
+      background: var(--color-input-background);
+      border-radius: 9px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+
+    /* the filled part of the track */
+    .option-bar div i {
+      display: block;
+      height: 100%;
+      background: var(--color-gold);
+    }
+
+    /* ---------------------------------------------------------------
+       Gap table
+       --------------------------------------------------------------- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      text-align: left;
+      color: var(--color-muted-text);
+      font-weight: 600;
+      padding: 8px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+
+    td a {
+      color: var(--color-gold);
+    }
+
+    /* table-scroll-wrap = lets a wide table scroll sideways on small screens */
+    .table-scroll-wrap {
+      overflow-x: auto;
+    }
+
+    /* priority colours */
+    .priority {
+      font-weight: 600;
+    }
+
+    .priority-high {
+      color: var(--color-danger);
+    }
+
+    .priority-medium {
+      color: var(--color-gold);
+    }
+
+    .priority-low {
+      color: var(--color-muted-text);
+    }
+
+    /* ---------------------------------------------------------------
+       Weekly plan cards
+       --------------------------------------------------------------- */
+    .weekly-plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    .weekly-plan-grid > div {
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 14px;
+      background: var(--color-input-background);
+    }
+
+    .weekly-plan-grid h3 {
+      margin: 0 0 8px;
+      font: 700 15px Georgia, serif;
+      color: var(--color-gold);
+    }
+
+    .weekly-plan-grid p {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .weekly-plan-grid a {
+      color: var(--color-text);
+    }
+
+    /* ---------------------------------------------------------------
+       Misc
+       --------------------------------------------------------------- */
+    .note {
+      color: var(--color-muted-text);
+      font-size: 13px;
+    }
+
+    footer {
+      padding: 26px 0 40px;
+      color: var(--color-muted-text);
+      font-size: 13px;
+    }
+
+    /* ---------------------------------------------------------------
+       Account bar (header), sign in / sign up card
+       --------------------------------------------------------------- */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .account-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    .account-bar #accountName {
+      font-weight: 600;
+    }
+
+    .auth-card {
+      max-width: 460px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .auth-tab {
+      background: none;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      padding: 8px 14px;
+      font: 600 15px inherit;
+      color: var(--color-muted-text);
+      cursor: pointer;
+    }
+
+    .auth-tab[aria-selected="true"] {
+      color: var(--color-text);
+      border-bottom-color: var(--color-gold);
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field-hint {
+      color: var(--color-muted-text);
+      font-size: 12px;
+      margin: 4px 0 0;
+    }
+
+    .form-error {
+      color: var(--color-danger);
+      font-size: 14px;
+      margin: 0;
+      min-height: 20px;
+    }
+
+    .storage-warning {
+      border: 1px solid var(--color-danger);
+      color: var(--color-danger);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    /* ---------------------------------------------------------------
+       History list
+       --------------------------------------------------------------- */
+    .history-summary {
+      margin: 0 0 6px;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 1fr minmax(120px, 190px) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .history-item:last-child {
+      border-bottom: 0;
+    }
+
+    .history-title {
+      font-weight: 600;
+    }
+
+    .history-meta {
+      color: var(--color-muted-text);
+      font-size: 13px;
+    }
+
+    .history-score {
+      display: grid;
+      grid-template-columns: 1fr 44px;
+      gap: 10px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .mini-bar {
+      height: 9px;
+      background: var(--color-input-background);
+      border-radius: 9px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+
+    .mini-bar i {
+      display: block;
+      height: 100%;
+      background: var(--color-gold);
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 14px;
+      white-space: nowrap;
+    }
+
+    .badge {
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--color-gold);
+      border: 1px solid var(--color-gold);
+      border-radius: 99px;
+      padding: 0 7px;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 620px) {
+      .history-item {
+        grid-template-columns: 1fr auto;
+      }
+
+      .history-score {
+        grid-column: 1 / -1;
+        order: 3;
+
+      }
+      
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="page-wrap">
+      <div class="logo">Placement<i>Tracker</i></div>
+      <div class="header-right">
+        <small>College Placement Tracker · Distorted Faction</small>
+        <div class="account-bar" id="accountBar" hidden>
+          <span>Signed in as <span id="accountName"></span></span>
+          <button class="link-button" id="historyLink" type="button">My history</button>
+          <button class="link-button" id="signOutButton" type="button">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-wrap">
+
+    <h1>Know where you stand before the drive does.</h1>
+    <p class="subtitle">
+      Upload your resume. We read your skills, match them against what companies hire for,
+      show your exact gaps and give you a weekly plan to close them.
+    </p>
+
+    <div class="storage-warning" id="serverWarning" role="alert" hidden>
+      Cannot reach the Placement Tracker server. Start it with <b>node server.js</b> and open the
+      address it prints (usually http://localhost:3000). Opening this file directly will not work.
+    </div>
+
+    <!-- =============================================================
+         Sign in / sign up — shown until a student is signed in
+         ============================================================= -->
+    <section class="card auth-card" id="authSection" hidden>
+      <div class="auth-tabs" role="tablist" aria-label="Account">
+        <button class="auth-tab" id="tabSignIn" type="button" role="tab" aria-selected="true" aria-controls="signInForm">Sign in</button>
+        <button class="auth-tab" id="tabSignUp" type="button" role="tab" aria-selected="false" aria-controls="signUpForm">Sign up</button>
+      </div>
+
+      <form id="signInForm" novalidate>
+        <div class="field">
+          <label for="signInEmail">Email</label>
+          <input type="email" id="signInEmail" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="signInPassword">Password</label>
+          <input type="password" id="signInPassword" autocomplete="current-password" required>
+        </div>
+        <p class="form-error" id="signInError" role="alert"></p>
+        <div class="button-row">
+          <button class="primary-button" type="submit">Sign in</button>
+          <button class="link-button" type="button" id="goToSignUp">New here? Create an account</button>
+        </div>
+      </form>
+
+      <form id="signUpForm" novalidate hidden>
+        <div class="field">
+          <label for="signUpName">Full name</label>
+          <input type="text" id="signUpName" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="signUpEmail">Email</label>
+          <input type="email" id="signUpEmail" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="signUpPassword">Password</label>
+          <input type="password" id="signUpPassword" autocomplete="new-password" required>
+          <p class="field-hint">At least 8 characters.</p>
+        </div>
+        <div class="field">
+          <label for="signUpConfirm">Confirm password</label>
+          <input type="password" id="signUpConfirm" autocomplete="new-password" required>
+        </div>
+        <p class="form-error" id="signUpError" role="alert"></p>
+        <div class="button-row">
+          <button class="primary-button" type="submit">Create account</button>
+          <button class="link-button" type="button" id="goToSignIn">Already have an account? Sign in</button>
+        </div>
+      </form>
+
+      <p class="note" style="margin:16px 0 0">
+        Your account and history are saved on the Placement Tracker server. There is no password reset yet, so keep your password safe.
+      </p>
+    </section>
+
+    <!-- =============================================================
+         The tracker itself — shown only when a student is signed in
+         ============================================================= -->
+    <div id="appArea" hidden>
+
+    <!-- =============================================================
+         Step 1 — resume input + target selection
+         ============================================================= -->
+    <section class="card">
+      <h2>Step 1 · Add your resume</h2>
+
+      <div class="two-column-grid">
+
+        <!-- left column: file drop zone and resume text -->
+        <div>
+          <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload resume">
+            <b>Drop your resume here or click to browse</b>
+            <span>PDF or TXT · the file is read in your browser</span>
+          </div>
+
+          <input type="file" id="fileInput" accept=".pdf,.txt" hidden>
+          <div id="fileStatus" aria-live="polite"></div>
+
+          <label for="resumeText" style="margin-top:12px">Resume text (edit to fix anything we missed)</label>
+          <textarea id="resumeText" placeholder="Your resume text appears here. You can also paste it."></textarea>
+
+          <button class="link-button" id="sampleButton" type="button">Use a sample resume</button>
+        </div>
+
+        <!-- right column: company / role, or a custom job description -->
+        <div>
+          <label for="companySelect">Company</label>
+          <select id="companySelect"></select>
+
+          <div id="roleWrapper" style="margin-top:12px">
+            <label for="roleSelect">Role</label>
+            <select id="roleSelect"></select>
+          </div>
+
+          <div id="jobDescWrapper" hidden style="margin-top:12px">
+            <label for="jobDescText">Paste the job description</label>
+            <textarea id="jobDescText" placeholder="Paste a job description; skills are read from it."></textarea>
+          </div>
+
+          <p class="note">
+            Hiring bars are illustrative starting points. A placement cell can replace them with
+            each season's real drive data.
+          </p>
+
+          <div class="button-row">
+            <button class="primary-button" id="analyzeButton" type="button">Analyse my resume</button>
+            <span id="errorMessage" role="alert"></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =============================================================
+         Results — hidden until "Analyse my resume" is clicked
+         ============================================================= -->
+    <div id="resultsSection" hidden>
+
+      <!-- match score ring + verdict -->
+      <section class="card">
+        <div class="score-layout">
+
+          <div class="score-ring">
+            <svg width="180" height="180" viewBox="0 0 120 120">
+              <!-- background track -->
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-border)" stroke-width="10" />
+              <!-- score arc; stroke-dasharray is set from JS (circumference ≈ 327) -->
+              <circle id="scoreArc" cx="60" cy="60" r="52" fill="none" stroke="var(--color-gold)"
+                      stroke-width="10" stroke-linecap="round" stroke-dasharray="0 327"
+                      style="transition:stroke-dasharray .9s ease" />
+            </svg>
+            <b><span id="scorePercent">0%</span><small>match</small></b>
+          </div>
+
+          <div>
+            <h2 id="resultTitle"></h2>
+            <p id="verdictText" style="margin:0 0 10px"></p>       <!-- verdict line -->
+            <p id="eligibilityText" class="note" style="margin:0 0 12px"></p>  <!-- CGPA line -->
+            <div id="deltaText" class="note"></div>                <!-- score delta after ticking skills -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- role ranking -->
+      <section class="card">
+        <h2>Which roles suit you best</h2>
+        <p class="note" style="margin-top:-6px">
+          Ranked by how much of each role's required skills you already have.
+          Select a role to make it your target.
+        </p>
+        <div id="rolesList"></div>
+      </section>
+
+      <!-- detected vs missing skills -->
+      <section class="card">
+        <h2>Skills we found in your resume</h2>
+        <div id="foundSkills"></div>
+        <h2 style="margin-top:14px">Skills this target needs that you lack</h2>
+        <div id="missingSkills"></div>
+      </section>
+
+      <!-- company comparison -->
+      <section class="card">
+        <h2>Companies hiring for this role</h2>
+        <p class="note" style="margin-top:-6px">
+          Your match for the selected role at each company. Select a row to switch.
+        </p>
+        <div id="companyComparison"></div>
+      </section>
+
+      <!-- skill gap table -->
+      <section class="card">
+        <h2>Skill gap and courses</h2>
+        <p class="note" style="margin-top:-6px">
+          Tick a skill once you have learned it and your score updates.
+        </p>
+        <div class="table-scroll-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Have it</th>
+                <th>Skill</th>
+                <th>Priority</th>
+                <th>Free course</th>
+              </tr>
+            </thead>
+            <tbody id="gapTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- weekly plan -->
+      <section class="card">
+        <h2>Your weekly action plan</h2>
+        <div class="weekly-plan-grid" id="weeklyPlan"></div>
+      </section>
+
+    </div><!-- /#resultsSection -->
+
+    <!-- =============================================================
+         Student history — every analysis is saved automatically
+         ============================================================= -->
+    <section class="card" id="historySection">
+      <h2 id="historyTitle" tabindex="-1">Your history</h2>
+      <p class="history-summary note" id="historySummary"></p>
+      <p class="form-error" id="historySaveError" role="alert" style="min-height:0"></p>
+      <div id="historyList"></div>
+      <div class="button-row" id="historyFooter" hidden>
+        <button class="link-button" id="clearHistoryButton" type="button">Clear all history</button>
+      </div>
+    </section>
+
+    </div><!-- /#appArea -->
+
+  </main>
+
+  <footer>
+    <div class="page-wrap">
+      Your resume file is read in this browser. When you analyse it, the resume text and results are saved to your account
+      so you can come back to them. Scores are private and never ranked against other students.
+    </div>
+  </footer>
+
+  <!-- PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <script>
+    /* =================================================================
+       DATA
+       ================================================================= */
+
+    /* Skill catalogue.
+       Key -> [ label, aliases searched for in the resume, courseName, courseProvider, courseUrl ] */
+    const SKILLS = {
+      dsa: [
+        'Data Structures & Algorithms',
+        ['data structures', 'algorithms', 'dsa', 'leetcode', 'codeforces', 'codechef', 'competitive programming'],
+        'DSA self-paced path',
+        'GeeksforGeeks',
+        'https://www.geeksforgeeks.org/learn-data-structures-and-algorithms-dsa-tutorial/'
+      ],
+      oop: [
+        'Object-oriented programming',
+        ['oop', 'oops', 'object oriented', 'object-oriented'],
+        'OOP concepts explained',
+        'GeeksforGeeks',
+        'https://www.geeksforgeeks.org/object-oriented-programming-oops-concept-in-java/'
+      ],
+      python: [
+        'Python',
+        ['python', 'django', 'flask'],
+        'Learn Python',
+        'LearnPython.org',
+        'https://www.learnpython.org/'
+      ],
+      java: [
+        'Java',
+        ['java', 'spring', 'spring boot'],
+        'Java learning path',
+        'Dev.java',
+        'https://dev.java/learn/'
+      ],
+      cpp: [
+        'C / C++',
+        ['c++', 'cpp', 'c programming'],
+        'Learn C++',
+        'LearnCpp.com',
+        'https://www.learncpp.com/'
+      ],
+      js: [
+        'JavaScript',
+        ['javascript', 'js', 'es6', 'typescript'],
+        'The Modern JavaScript Tutorial',
+        'javascript.info',
+        'https://javascript.info/'
+      ],
+      react: [
+        'React',
+        ['react', 'reactjs', 'react.js', 'next.js', 'redux'],
+        'Learn React',
+        'react.dev',
+        'https://react.dev/learn'
+      ],
+      node: [
+        'Node.js',
+        ['node', 'nodejs', 'node.js', 'express'],
+        'Node.js learning path',
+        'nodejs.org',
+        'https://nodejs.org/en/learn'
+      ],
+      web: [
+        'HTML & CSS',
+        ['html', 'css', 'html5', 'css3', 'tailwind', 'bootstrap'],
+        'Learn web development',
+        'MDN',
+        'https://developer.mozilla.org/en-US/docs/Learn'
+      ],
+      sql: [
+        'SQL',
+        ['sql', 'mysql', 'postgresql', 'postgres', 'oracle', 'sqlite'],
+        'Interactive SQL lessons',
+        'SQLBolt',
+        'https://sqlbolt.com/'
+      ],
+      dbms: [
+        'DBMS',
+        ['dbms', 'database management', 'normalization', 'mongodb', 'nosql'],
+        'Database management systems',
+        'NPTEL',
+        'https://nptel.ac.in/'
+      ],
+      os: [
+        'Operating systems',
+        ['operating system', 'operating systems', 'multithreading'],
+        'Operating systems tutorial',
+        'GeeksforGeeks',
+        'https://www.geeksforgeeks.org/operating-systems/'
+      ],
+      cn: [
+        'Computer networks',
+        ['computer networks', 'networking', 'tcp/ip', 'http'],
+        'Computer network tutorial',
+        'GeeksforGeeks',
+        'https://www.geeksforgeeks.org/computer-network-tutorials/'
+      ],
+      git: [
+        'Git & GitHub',
+        ['git', 'github', 'gitlab'],
+        'Pro Git book',
+        'git-scm.com',
+        'https://git-scm.com/book'
+      ],
+      linux: [
+        'Linux',
+        ['linux', 'ubuntu', 'bash', 'shell scripting'],
+        'Linux Journey',
+        'linuxjourney.com',
+        'https://linuxjourney.com/'
+      ],
+      aws: [
+        'Cloud (AWS)',
+        ['aws', 'azure', 'gcp', 'cloud', 'ec2'],
+        'AWS Skill Builder',
+        'AWS',
+        'https://explore.skillbuilder.aws/learn'
+      ],
+      docker: [
+        'Docker & DevOps',
+        ['docker', 'kubernetes', 'ci/cd', 'devops', 'github actions'],
+        'Docker: get started',
+        'Docker Docs',
+        'https://docs.docker.com/get-started/'
+      ],
+      ml: [
+        'Machine learning',
+        ['machine learning', 'scikit-learn', 'tensorflow', 'pytorch', 'deep learning', 'nlp'],
+        'Intro to machine learning',
+        'Kaggle Learn',
+        'https://www.kaggle.com/learn'
+      ],
+      data: [
+        'Data analysis',
+        ['pandas', 'numpy', 'data analysis', 'power bi', 'tableau', 'excel', 'matplotlib'],
+        'Pandas course',
+        'Kaggle Learn',
+        'https://www.kaggle.com/learn/pandas'
+      ],
+      rest: [
+        'REST APIs',
+        ['rest', 'restful', 'api', 'apis', 'fastapi', 'graphql'],
+        'Backend developer roadmap',
+        'roadmap.sh',
+        'https://roadmap.sh/backend'
+      ],
+      sysd: [
+        'System design',
+        ['system design', 'microservices', 'scalability', 'low level design'],
+        'System design primer',
+        'GitHub',
+        'https://github.com/donnemartin/system-design-primer'
+      ],
+      apt: [
+        'Aptitude & reasoning',
+        ['aptitude', 'quantitative', 'logical reasoning', 'amcat', 'cocubes', 'verbal'],
+        'Aptitude practice tests',
+        'IndiaBIX',
+        'https://www.indiabix.com/'
+      ],
+      comm: [
+        'Communication',
+        ['communication', 'public speaking', 'presentation', 'teamwork', 'leadership', 'toastmasters'],
+        'English and interview skills',
+        'British Council',
+        'https://learnenglish.britishcouncil.org/'
+      ],
+      proj: [
+        'Hands-on projects',
+        ['project', 'projects', 'hackathon', 'internship'],
+        'Project-based learning ideas',
+        'GitHub',
+        'https://github.com/practical-tutorials/project-based-learning'
+      ]
+    };
+
+    /* Roles.
+       Key -> [ roleLabel, { skillKey: weight } ]  where weight 3 = must have, 1 = nice to have */
+    const ROLES = {
+      sys: ['Systems engineer (fresher)', { apt: 3, comm: 2, oop: 2, sql: 2, dbms: 1, java: 1, dsa: 1, proj: 1 }],
+      sde: ['Software developer', { dsa: 3, oop: 3, dbms: 2, os: 2, cn: 1, git: 2, sysd: 1, proj: 2 }],
+      web: ['Full-stack developer', { js: 3, react: 3, node: 2, web: 3, sql: 2, rest: 2, git: 2, docker: 1, proj: 3 }],
+      fe: ['Frontend developer', { js: 3, react: 3, web: 3, git: 2, rest: 1, proj: 3 }],
+      be: ['Backend developer', { rest: 3, sql: 3, dbms: 2, dsa: 2, java: 1, python: 1, node: 1, git: 2, docker: 1, os: 1, proj: 2 }],
+      ds: ['Data scientist', { python: 3, data: 3, ml: 3, sql: 2, comm: 1, proj: 2 }],
+      da: ['Data analyst', { sql: 3, data: 3, python: 2, comm: 2, apt: 1, proj: 1 }],
+      mle: ['AI / ML engineer', { python: 3, ml: 3, data: 2, dsa: 1, git: 1, docker: 1, proj: 2 }],
+      dev: ['DevOps / cloud engineer', { linux: 3, aws: 3, docker: 3, git: 2, cn: 2, python: 1, os: 1 }]
+    };
+
+    /* Companies.
+       name, isGeneric = general-fit entry, cgpaCutoff,
+       rolesOffered = role keys, extraSkillWeight = extra weight this company puts on skills */
+    const COMPANIES = [
+      { name: 'Any company (general fit)', isGeneric: 1, cgpaCutoff: 0, rolesOffered: Object.keys(ROLES), extraSkillWeight: {} },
+      { name: 'TCS', cgpaCutoff: 6, rolesOffered: ['sys', 'sde', 'web'], extraSkillWeight: { apt: 1, java: 1 } },
+      { name: 'Infosys', cgpaCutoff: 6, rolesOffered: ['sys', 'sde', 'ds', 'da'], extraSkillWeight: { comm: 1, apt: 1, python: 1 } },
+      { name: 'Amazon', cgpaCutoff: 7, rolesOffered: ['sde', 'be', 'web', 'dev'], extraSkillWeight: { dsa: 2, sysd: 2, os: 1 } },
+      { name: 'Accenture', cgpaCutoff: 6, rolesOffered: ['sys', 'sde', 'web', 'da', 'dev'], extraSkillWeight: { comm: 1, apt: 1 } },
+      { name: 'Zoho', cgpaCutoff: 6, rolesOffered: ['sde', 'web', 'be'], extraSkillWeight: { dsa: 2, cpp: 1, java: 1 } },
+      { name: 'Product startup', cgpaCutoff: 6, rolesOffered: ['web', 'fe', 'be', 'ds', 'dev'], extraSkillWeight: { git: 1, proj: 1 } },
+      { name: 'Analytics firm', cgpaCutoff: 6.5, rolesOffered: ['ds', 'da', 'mle'], extraSkillWeight: { sql: 1, comm: 1 } }
+    ];
+
+    const SAMPLE_RESUME =
+      "Aarav Sharma | B.Tech CSE, 2nd year | CGPA 8.1\n" +
+      "Skills: Python, Java, SQL, HTML, CSS, JavaScript, Git, GitHub\n" +
+      "Projects: Built a library management system using Java and MySQL. " +
+      "Developed a personal portfolio website with HTML, CSS and JavaScript. " +
+      "Took part in a college hackathon.\n" +
+      "Certificates: Python for Everybody. Solved 60 problems on LeetCode.";
+
+    /* =================================================================
+       HELPERS
+       ================================================================= */
+
+    const selectElement = selector => document.querySelector(selector);
+
+    // escape regex metacharacters in an alias so it can be dropped into a RegExp safely
+    const escapeRegexChars = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // one regex per skill, matching any of its aliases as a whole word
+    const SKILL_MATCH_REGEX = {};
+    for (const skillKey in SKILLS) {
+      SKILL_MATCH_REGEX[skillKey] = new RegExp(
+        '(^|[^a-z0-9+#])(' + SKILLS[skillKey][1].map(escapeRegexChars).join('|') + ')(?![a-z0-9+#])'
+      );
+    }
+
+    // returns the list of skill keys mentioned in a block of text
+    const extractSkillsFromText = text => {
+      text = text.toLowerCase();
+      return Object.keys(SKILLS).filter(skillKey => SKILL_MATCH_REGEX[skillKey].test(text));
+    };
+
+    /* Application state:
+       foundSkills   = skill keys detected in the resume text
+       learnedSkills = skill keys the user manually ticked as "learned" (a Set)
+       cgpa          = CGPA number pulled from the resume, or null if not found
+       currentEntryId = id of the saved history entry this analysis belongs to (null = not saved) */
+    let appState = { foundSkills: [], learnedSkills: new Set(), cgpa: null, currentEntryId: null };
+
+    /* =================================================================
+       COMPANY / ROLE SELECTORS
+       ================================================================= */
+
+    selectElement('#companySelect').innerHTML =
+      COMPANIES.map((company, index) => `<option value="${index}">${company.name}</option>`).join('') +
+      '<option value="custom">Custom job description</option>';
+    fillRoleOptionsForSelectedCompany();
+
+    selectElement('#companySelect').onchange = () => {
+      const isCustom = selectElement('#companySelect').value === 'custom';
+      selectElement('#jobDescWrapper').hidden = !isCustom;
+      selectElement('#roleWrapper').hidden = isCustom;
+      if (!isCustom) fillRoleOptionsForSelectedCompany();
+      if (!selectElement('#resultsSection').hidden && hasUsableTarget()) renderResults();
+    };
+
+    selectElement('#jobDescText').oninput = () => {
+      if (!selectElement('#resultsSection').hidden && hasUsableTarget()) renderResults();
+    };
+
+    // fill the role dropdown for the selected company, keeping the current role if it still fits
+    function fillRoleOptionsForSelectedCompany() {
+      const company = COMPANIES[selectElement('#companySelect').value];
+      if (!company) return;
+      const previouslySelectedRole = selectElement('#roleSelect').value;
+      selectElement('#roleSelect').innerHTML =
+        company.rolesOffered.map(roleKey => `<option value="${roleKey}">${ROLES[roleKey][0]}</option>`).join('');
+      if (company.rolesOffered.includes(previouslySelectedRole)) {
+        selectElement('#roleSelect').value = previouslySelectedRole;
+      }
+    }
+
+    // current target: either a company+role combination, or the pasted job description
+    function getCurrentTarget() {
+      const companyValue = selectElement('#companySelect').value;
+      if (companyValue === 'custom') {
+        const requirements = {};
+        extractSkillsFromText(selectElement('#jobDescText').value).forEach(skillKey => requirements[skillKey] = 1);
+        return { name: 'Custom job description', cgpaCutoff: 0, requirements };
+      }
+      return buildTarget(COMPANIES[companyValue], selectElement('#roleSelect').value);
+    }
+
+    // build a target from a company and a role, adding the company's extra skill weights
+    const buildTarget = (company, roleKey) => {
+      const requirements = { ...ROLES[roleKey][1] };
+      for (const skillKey in company.extraSkillWeight) {
+        requirements[skillKey] = (requirements[skillKey] || 0) + company.extraSkillWeight[skillKey];
+      }
+      return {
+        name: company.isGeneric ? ROLES[roleKey][0] : company.name + ' · ' + ROLES[roleKey][0],
+        cgpaCutoff: company.cgpaCutoff,
+        requirements
+      };
+    };
+
+    // a target is usable only if it requires at least one skill
+    const hasUsableTarget = () => Object.keys(getCurrentTarget().requirements).length > 0;
+
+    // weighted match score: share of required weight the candidate already covers
+    const calculateMatchScore = (target, haveSkills) => {
+      let totalWeight = 0, matchedWeight = 0;
+      for (const skillKey in target.requirements) {
+        totalWeight += target.requirements[skillKey];
+        if (haveSkills.includes(skillKey)) matchedWeight += target.requirements[skillKey];
+      }
+      return totalWeight ? Math.round(100 * matchedWeight / totalWeight) : 0;
+    };
+
+    /* =================================================================
+       FILE INPUT (PDF / TXT, read in the browser)
+       ================================================================= */
+
+    async function readResumeFile(file) {
+      const statusEl = selectElement('#fileStatus');
+      statusEl.style.color = 'var(--color-muted-text)';
+      statusEl.textContent = 'Reading ' + file.name + '…';
+
+      try {
+        let extractedText = '';
+
+        if (/\.pdf$/i.test(file.name)) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+          const pdfDocument = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+          for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
+            const page = await pdfDocument.getPage(pageNumber);
+            const pageContent = await page.getTextContent();
+            extractedText += pageContent.items.map(item => item.str).join(' ') + '\n';
+          }
+        } else {
+          extractedText = await file.text();
+        }
+
+        if (extractedText.trim().length < 20) throw 0;   // almost certainly a scanned image
+
+        selectElement('#resumeText').value = extractedText;
+        statusEl.style.color = 'var(--color-success)';
+        statusEl.textContent = 'Read ' + file.name + ' · ' + extractedText.split(/\s+/).length + ' words';
+      } catch (error) {
+        statusEl.style.color = 'var(--color-danger)';
+        statusEl.textContent =
+          'Could not read text from that file. It may be a scanned image. ' +
+          'Paste your resume text below instead.';
+      }
+    }
+
+    const dropZoneEl = selectElement('#dropZone');
+
+    dropZoneEl.onclick = () => selectElement('#fileInput').click();
+
+    dropZoneEl.onkeydown = event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectElement('#fileInput').click();
+      }
+    };
+
+    selectElement('#fileInput').onchange = event =>
+      event.target.files[0] && readResumeFile(event.target.files[0]);
+
+    dropZoneEl.ondragover = event => {
+      event.preventDefault();
+      dropZoneEl.classList.add('drag-over');
+    };
+
+    dropZoneEl.ondragleave = () => dropZoneEl.classList.remove('drag-over');
+
+    dropZoneEl.ondrop = event => {
+      event.preventDefault();
+      dropZoneEl.classList.remove('drag-over');
+      event.dataTransfer.files[0] && readResumeFile(event.dataTransfer.files[0]);
+    };
+
+    selectElement('#sampleButton').onclick = () => {
+      selectElement('#resumeText').value = SAMPLE_RESUME;
+      selectElement('#fileStatus').style.color = 'var(--color-success)';
+      selectElement('#fileStatus').textContent = 'Sample resume loaded';
+    };
+
+    /* =================================================================
+       ANALYSE
+       ================================================================= */
+
+    selectElement('#analyzeButton').onclick = () => {
+      const resumeText = selectElement('#resumeText').value.trim();
+      const errorEl = selectElement('#errorMessage');
+      errorEl.textContent = '';
+
+      if (resumeText.length < 40) {
+        errorEl.textContent = 'Add your resume first: upload a file or paste the text.';
+        return;
+      }
+      if (!hasUsableTarget()) {
+        errorEl.textContent = 'Paste a job description that names some skills.';
+        return;
+      }
+
+      appState.foundSkills = extractSkillsFromText(resumeText);
+      appState.learnedSkills = new Set();
+
+      // pull a CGPA / GPA number out of the resume, if one is there
+      const cgpaMatch = resumeText.match(/(?:cgpa|gpa)\D{0,12}(\d{1,2}(?:\.\d{1,2})?)/i);
+      appState.cgpa = cgpaMatch ? parseFloat(cgpaMatch[1]) : null;
+      appState.currentEntryId = currentUser ? createId() : null;   // every analysis becomes a new history entry
+
+      selectElement('#resultsSection').hidden = false;
+      renderResults();
+      createHistoryEntry();
+      selectElement('#resultTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    /* =================================================================
+       RENDER RESULTS
+       ================================================================= */
+
+    function renderResults() {
+      const target = getCurrentTarget();
+      const haveSkills = [...appState.foundSkills, ...appState.learnedSkills];   // detected + ticked
+      const currentScore = calculateMatchScore(target, haveSkills);
+      const startingScore = calculateMatchScore(target, appState.foundSkills);   // score from the resume alone
+      const requiredSkillKeys = Object.keys(target.requirements)
+        .sort((a, b) => target.requirements[b] - target.requirements[a]);        // heaviest weight first
+      const missingSkillKeys = requiredSkillKeys.filter(skillKey => !haveSkills.includes(skillKey));
+
+      // --- score ring ---
+      selectElement('#scoreArc').setAttribute('stroke-dasharray', (currentScore / 100 * 327) + ' 327');
+      selectElement('#scorePercent').textContent = currentScore + '%';
+      selectElement('#resultTitle').textContent = 'Your match for ' + target.name;
+
+      // --- verdict ---
+      selectElement('#verdictText').textContent =
+        currentScore >= 75 ? 'You are close to the bar. Polish the last gaps and start mock interviews.'
+        : currentScore >= 50 ? 'A solid base. Closing ' + Math.min(3, missingSkillKeys.length) +
+                    ' priority skills will move you into the ready range.'
+        : 'Plenty of room to grow, and the plan below shows exactly where to start.';
+
+      // --- CGPA eligibility ---
+      selectElement('#eligibilityText').textContent = target.cgpaCutoff
+        ? (appState.cgpa == null
+            ? 'CGPA not found in the resume. This company asks for ' + target.cgpaCutoff + ' or above.'
+            : appState.cgpa >= target.cgpaCutoff
+              ? 'CGPA ' + appState.cgpa + ' meets the ' + target.cgpaCutoff + ' cutoff.'
+              : 'CGPA ' + appState.cgpa + ' is below the ' + target.cgpaCutoff + ' cutoff. Some drives will not shortlist you, ' +
+                'so check with your placement cell.')
+        : '';
+
+      // --- progress since the first analysis ---
+      selectElement('#deltaText').textContent = appState.learnedSkills.size
+        ? 'Started at ' + startingScore + '%. Up ' + (currentScore - startingScore) + ' points from ' +
+          appState.learnedSkills.size + ' skill' + (appState.learnedSkills.size > 1 ? 's' : '') + ' you marked as learned.'
+        : '';
+
+      // --- skill chips ---
+      selectElement('#foundSkills').innerHTML = appState.foundSkills.length
+        ? appState.foundSkills.map(skillKey => `<span class="skill-chip have-it">${SKILLS[skillKey][0]}</span>`).join('')
+        : '<span class="note">No known skills detected. Check the resume text above.</span>';
+
+      selectElement('#missingSkills').innerHTML = missingSkillKeys.length
+        ? missingSkillKeys.map(skillKey => `<span class="skill-chip missing">${SKILLS[skillKey][0]}</span>`).join('')
+        : '<span class="note">No gaps left for this target.</span>';
+
+      const selectedCompanyValue = selectElement('#companySelect').value;
+      const selectedRoleKey = selectElement('#roleSelect').value;
+
+      // --- company comparison for the selected role ---
+      selectElement('#companyComparison').innerHTML = selectedCompanyValue === 'custom'
+        ? '<p class="note">Company comparison is not available for a custom job description.</p>'
+        : COMPANIES.map((company, index) => company.rolesOffered.includes(selectedRoleKey)
+            ? `<div class="option-bar ${selectedCompanyValue == index ? 'selected' : ''}" data-company-index="${index}" tabindex="0">
+                 <span>${company.name}</span>
+                 <div><i style="width:${calculateMatchScore(buildTarget(company, selectedRoleKey), haveSkills)}%"></i></div>
+                 <b>${calculateMatchScore(buildTarget(company, selectedRoleKey), haveSkills)}%</b>
+               </div>`
+            : '').join('');
+
+      // --- role ranking within the selected company ---
+      {
+        const currentRoleKey = selectedRoleKey;
+        selectElement('#rolesList').innerHTML = selectedCompanyValue === 'custom'
+          ? '<p class="note">Role ranking is not available for a custom job description.</p>'
+          : COMPANIES[selectedCompanyValue].rolesOffered
+              .map(roleKey => ({
+                roleKey,
+                matchPercent: calculateMatchScore(buildTarget(COMPANIES[selectedCompanyValue], roleKey), haveSkills)
+              }))
+              .sort((a, b) => b.matchPercent - a.matchPercent)
+              .map((entry, rank) => `<div class="option-bar ${entry.roleKey == currentRoleKey ? 'selected' : ''}" data-role-key="${entry.roleKey}" tabindex="0">
+                   <span>${rank + 1}. ${ROLES[entry.roleKey][0]}${rank ? '' : ' <em>start here</em>'}</span>
+                   <div><i style="width:${entry.matchPercent}%"></i></div>
+                   <b>${entry.matchPercent}%</b>
+                 </div>`).join('');
+      }
+
+      // --- gap table ---
+      const priorityLabelFor = weight =>
+        weight >= 3 ? ['High', 'priority-high'] : weight == 2 ? ['Medium', 'priority-medium'] : ['Low', 'priority-low'];
+
+      selectElement('#gapTableBody').innerHTML = requiredSkillKeys.map(skillKey => {
+        const skillInfo = SKILLS[skillKey];
+        const alreadyInResume = appState.foundSkills.includes(skillKey);   // found in the resume, so the checkbox is locked
+        const [priorityText, priorityClass] = priorityLabelFor(target.requirements[skillKey]);
+        return `<tr>
+            <td><input type="checkbox" data-skill-key="${skillKey}" ${haveSkills.includes(skillKey) ? 'checked' : ''} ${alreadyInResume ? 'disabled' : ''} aria-label="I have ${skillInfo[0]}"></td>
+            <td>${skillInfo[0]}${alreadyInResume ? ' <span class="note">(found in resume)</span>' : ''}</td>
+            <td class="priority ${priorityClass}">${priorityText}</td>
+            <td>${alreadyInResume
+              ? '<span class="note">Already covered</span>'
+              : `<a href="${skillInfo[4]}" target="_blank" rel="noopener">${skillInfo[2]}</a><br><span class="note">${skillInfo[3]}</span>`}</td>
+          </tr>`;
+      }).join('');
+
+      // --- weekly plan: two missing skills per week, then a review week ---
+      let planHtml = '';
+      for (let i = 0; i < missingSkillKeys.length; i += 2) {
+        const weekSkills = missingSkillKeys.slice(i, i + 2);
+        planHtml += `<div>
+            <h3>Week ${i / 2 + 1}</h3>
+            ${weekSkills.map(skillKey => `<p><b>${SKILLS[skillKey][0]}</b><br><a href="${SKILLS[skillKey][4]}" target="_blank" rel="noopener">${SKILLS[skillKey][2]}</a></p>`).join('')}
+          </div>`;
+      }
+      planHtml += `<div>
+          <h3>Week ${Math.ceil(missingSkillKeys.length / 2) + 1}</h3>
+          <p><b>${missingSkillKeys.length ? 'Mock test and re-score' : 'Mock interviews'}</b><br>${missingSkillKeys.length
+            ? 'Tick what you have learned above, or update your resume and analyse again.'
+            : 'Keep practising aptitude and coding rounds for ' + target.name + '.'}</p>
+        </div>`;
+
+      selectElement('#weeklyPlan').innerHTML = planHtml;
+    }
+
+    /* =================================================================
+       RESULT INTERACTIONS
+       ================================================================= */
+
+    // click a company row to switch company
+    selectElement('#companyComparison').onclick = event => {
+      const barEl = event.target.closest('.option-bar');
+      if (barEl) {
+        selectElement('#companySelect').value = barEl.dataset.companyIndex;
+        fillRoleOptionsForSelectedCompany();
+        selectElement('#jobDescWrapper').hidden = true;
+        selectElement('#roleWrapper').hidden = false;
+        renderResults();
+      }
+    };
+
+    // click a role row to switch role
+    selectElement('#rolesList').onclick = event => {
+      const barEl = event.target.closest('.option-bar');
+      if (barEl) {
+        selectElement('#roleSelect').value = barEl.dataset.roleKey;
+        renderResults();
+      }
+    };
+
+    // keyboard equivalents for the two bar lists
+    selectElement('#rolesList').onkeydown = event => {
+      if (event.key === 'Enter') {
+        const barEl = event.target.closest('.option-bar');
+        if (barEl) barEl.click();
+      }
+    };
+
+    selectElement('#companyComparison').onkeydown = event => {
+      if (event.key === 'Enter') {
+        const barEl = event.target.closest('.option-bar');
+        if (barEl) barEl.click();
+      }
+    };
+
+    selectElement('#roleSelect').onchange = () => {
+      if (!selectElement('#resultsSection').hidden) renderResults();
+    };
+
+    // tick a skill as learned and re-score
+    selectElement('#gapTableBody').onchange = event => {
+      const skillKey = event.target.dataset.skillKey;
+      if (!skillKey) return;
+      event.target.checked ? appState.learnedSkills.add(skillKey) : appState.learnedSkills.delete(skillKey);
+      renderResults();
+      updateEntryProgress();
+    };
+
+    /* =================================================================
+       ACCOUNTS AND HISTORY
+       Accounts and history are stored by the server (server.js) and reached through /api/...
+       The browser only keeps a session cookie, which JavaScript cannot read.
+       ================================================================= */
+
+    const MAX_HISTORY_ENTRIES = 50;
+    const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    let currentUser = null;        // { name, email } while signed in
+    let historyEntries = [];       // the signed-in student's history, newest first
+    let historyLoading = false;
+    let saveQueue = Promise.resolve();   // server saves run one after another, in order
+
+    /* ---- small helpers ---- */
+
+    const createId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const normalizeEmail = email => email.trim().toLowerCase();
+    const escapeHtml = text => String(text).replace(/[&<>"']/g,
+      character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+
+    const formatDate = isoString => {
+      const date = new Date(isoString);
+      return isNaN(date) ? 'Unknown date'
+        : date.toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    };
+
+    // one place that talks to the server; throws an Error with a readable message
+    async function api(method, url, body) {
+      let response;
+      try {
+        response = await fetch(url, {
+          method,
+          credentials: 'same-origin',
+          headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+          body: body === undefined ? undefined : JSON.stringify(body)
+        });
+      } catch (networkError) {
+        const error = new Error('Cannot reach the server. Start it with "node server.js" and open the address it prints.');
+        error.unreachable = true;
+        throw error;
+      }
+
+      let data = null;
+      try { data = await response.json(); } catch (parseError) { /* not JSON */ }
+
+      if (!response.ok) {
+        // a 404 with no JSON means this page is not being served by server.js
+        const error = new Error(data && data.error
+          ? data.error
+          : response.status === 404
+            ? 'Cannot reach the server. Start it with "node server.js" and open the address it prints.'
+            : 'The server returned an error (' + response.status + ').');
+        error.status = response.status;
+        error.unreachable = !data && response.status === 404;
+        throw error;
+      }
+      return data;
+    }
+
+    /* ---- sign in / sign up screens ---- */
+
+    function showAuthTab(which, moveFocus) {
+      const isSignIn = which === 'signIn';
+      selectElement('#signInForm').hidden = !isSignIn;
+      selectElement('#signUpForm').hidden = isSignIn;
+      selectElement('#tabSignIn').setAttribute('aria-selected', String(isSignIn));
+      selectElement('#tabSignUp').setAttribute('aria-selected', String(!isSignIn));
+      selectElement('#signInError').textContent = '';
+      selectElement('#signUpError').textContent = '';
+      if (moveFocus) selectElement(isSignIn ? '#signInEmail' : '#signUpName').focus();
+    }
+
+    selectElement('#tabSignIn').onclick = () => showAuthTab('signIn', true);
+    selectElement('#tabSignUp').onclick = () => showAuthTab('signUp', true);
+    selectElement('#goToSignUp').onclick = () => showAuthTab('signUp', true);
+    selectElement('#goToSignIn').onclick = () => showAuthTab('signIn', true);
+
+    // left / right arrow keys switch between the two tabs
+    selectElement('.auth-tabs').onkeydown = event => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      const goToSignIn = selectElement('#tabSignUp').getAttribute('aria-selected') === 'true';
+      showAuthTab(goToSignIn ? 'signIn' : 'signUp', false);
+      selectElement(goToSignIn ? '#tabSignIn' : '#tabSignUp').focus();
+    };
+
+    function clearAuthForms() {
+      selectElement('#signInForm').reset();
+      selectElement('#signUpForm').reset();
+      selectElement('#signInError').textContent = '';
+      selectElement('#signUpError').textContent = '';
+    }
+
+    /* ---- sign up ---- */
+
+    selectElement('#signUpForm').onsubmit = async event => {
+      event.preventDefault();
+      const errorEl = selectElement('#signUpError');
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      errorEl.textContent = '';
+
+      const name = selectElement('#signUpName').value.trim().replace(/\s+/g, ' ');
+      const email = normalizeEmail(selectElement('#signUpEmail').value);
+      const password = selectElement('#signUpPassword').value;
+      const confirmation = selectElement('#signUpConfirm').value;
+
+      if (name.length < 2) { errorEl.textContent = 'Enter your full name.'; return; }
+      if (!EMAIL_PATTERN.test(email)) { errorEl.textContent = 'Enter a valid email address.'; return; }
+      if (password.length < 8) { errorEl.textContent = 'Choose a password with at least 8 characters.'; return; }
+      if (password !== confirmation) { errorEl.textContent = 'The two passwords do not match.'; return; }
+
+      submitButton.disabled = true;
+      errorEl.textContent = 'Creating your account…';
+      try {
+        const data = await api('POST', '/api/signup', { name, email, password });
+        errorEl.textContent = '';
+        await startSession(data.user);
+      } catch (error) {
+        errorEl.textContent = error.message;
+        if (error.unreachable) selectElement('#serverWarning').hidden = false;
+      } finally {
+        submitButton.disabled = false;
+      }
+    };
+
+    /* ---- sign in ---- */
+
+    selectElement('#signInForm').onsubmit = async event => {
+      event.preventDefault();
+      const errorEl = selectElement('#signInError');
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      errorEl.textContent = '';
+
+      const email = normalizeEmail(selectElement('#signInEmail').value);
+      const password = selectElement('#signInPassword').value;
+      if (!email || !password) { errorEl.textContent = 'Enter your email and password.'; return; }
+
+      submitButton.disabled = true;
+      try {
+        const data = await api('POST', '/api/signin', { email, password });
+        await startSession(data.user);
+      } catch (error) {
+        errorEl.textContent = error.message;
+        if (error.unreachable) selectElement('#serverWarning').hidden = false;
+      } finally {
+        submitButton.disabled = false;
+      }
+    };
+
+    /* ---- session ---- */
+
+    async function startSession(user) {
+      currentUser = { name: user.name, email: user.email };
+      historyEntries = [];
+      saveQueue = Promise.resolve();
+      selectElement('#serverWarning').hidden = true;
+      resetWorkspace();
+      clearAuthForms();
+      showSignedInScreen();
+      await refreshHistory();
+    }
+
+    // message is shown on the sign-in form (used when the server says the session has expired)
+    async function signOut(message, skipServerCall) {
+      if (!skipServerCall) await saveQueue;   // let any pending save finish first
+      currentUser = null;
+      historyEntries = [];
+      saveQueue = Promise.resolve();
+      resetWorkspace();          // so the next student on this computer never sees this resume
+      clearAuthForms();
+      showAuthTab('signIn', false);
+      showSignedOutScreen();
+      if (message) selectElement('#signInError').textContent = message;
+      if (!skipServerCall) {
+        try { await api('POST', '/api/signout'); } catch (error) { /* the cookie simply expires later */ }
+      }
+    }
+
+    function showSignedInScreen() {
+      selectElement('#authSection').hidden = true;
+      selectElement('#appArea').hidden = false;
+      selectElement('#accountBar').hidden = false;
+      selectElement('#accountName').textContent = currentUser.name;
+      renderHistory();
+    }
+
+    function showSignedOutScreen() {
+      selectElement('#authSection').hidden = false;
+      selectElement('#appArea').hidden = true;
+      selectElement('#accountBar').hidden = true;
+      selectElement('#accountName').textContent = '';
+    }
+
+    // put the tracker back to its empty starting state
+    function resetWorkspace() {
+      appState = { foundSkills: [], learnedSkills: new Set(), cgpa: null, currentEntryId: null };
+      selectElement('#resumeText').value = '';
+      selectElement('#jobDescText').value = '';
+      selectElement('#fileInput').value = '';
+      selectElement('#fileStatus').textContent = '';
+      selectElement('#errorMessage').textContent = '';
+      selectElement('#resultsSection').hidden = true;
+      selectElement('#companySelect').value = '0';
+      selectElement('#jobDescWrapper').hidden = true;
+      selectElement('#roleWrapper').hidden = false;
+      fillRoleOptionsForSelectedCompany();
+      selectElement('#roleSelect').selectedIndex = 0;
+    }
+
+    selectElement('#signOutButton').onclick = () => signOut();
+    selectElement('#historyLink').onclick = () =>
+      selectElement('#historySection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    /* ---- history: loading and saving ---- */
+
+    async function refreshHistory() {
+      historyLoading = true;
+      renderHistory();
+      try {
+        const data = await api('GET', '/api/history');
+        historyEntries = Array.isArray(data.entries) ? data.entries : [];
+        selectElement('#historySaveError').textContent = '';
+      } catch (error) {
+        if (error.status === 401) { signOut('Your session expired. Sign in again.', true); return; }
+        selectElement('#historySaveError').textContent = 'Could not load your history: ' + error.message;
+      }
+      historyLoading = false;
+      renderHistory();
+    }
+
+    // run a save after the previous one has finished, so the server sees changes in order
+    function queueSave(task) {
+      saveQueue = saveQueue.then(task).then(
+        () => { selectElement('#historySaveError').textContent = ''; },
+        error => {
+          if (!currentUser) return;
+          if (error.status === 401) { signOut('Your session expired. Sign in again.', true); return; }
+          selectElement('#historySaveError').textContent = 'Could not save to the server: ' + error.message;
+        });
+    }
+
+    // Each click on "Analyse my resume" adds one history entry. The entry keeps the resume and the
+    // company/role (or job description) it was analysed against, so it can be reopened later.
+    function createHistoryEntry() {
+      if (!currentUser || !appState.currentEntryId) return;
+
+      const target = getCurrentTarget();
+      const companyValue = selectElement('#companySelect').value;
+      const isCustom = companyValue === 'custom';
+      const haveSkills = [...appState.foundSkills, ...appState.learnedSkills];
+
+      const newEntry = {
+        id: appState.currentEntryId,
+        createdAt: new Date().toISOString(),
+        companyName: isCustom ? null : COMPANIES[companyValue].name,
+        roleKey: isCustom ? null : selectElement('#roleSelect').value,
+        jobDescText: isCustom ? selectElement('#jobDescText').value : '',
+        targetName: target.name,
+        resumeText: selectElement('#resumeText').value,
+        cgpa: appState.cgpa,
+        foundSkills: [...appState.foundSkills],
+        learnedSkills: [...appState.learnedSkills],
+        startScore: calculateMatchScore(target, appState.foundSkills),
+        score: calculateMatchScore(target, haveSkills),
+        missingSkills: Object.keys(target.requirements).filter(skillKey => !haveSkills.includes(skillKey))
+      };
+
+      historyEntries = [newEntry, ...historyEntries].slice(0, MAX_HISTORY_ENTRIES);
+      renderHistory();
+      queueSave(() => api('POST', '/api/history', newEntry));
+    }
+
+    // Ticking a skill as learned updates the entry that is open. Its score is always worked out
+    // for the target it was analysed with, even if you are now looking at a different company.
+    function updateEntryProgress() {
+      if (!currentUser || !appState.currentEntryId) return;
+
+      const entry = historyEntries.find(item => item.id === appState.currentEntryId);
+      if (!entry) return;
+
+      entry.learnedSkills = [...appState.learnedSkills];
+
+      const company = COMPANIES.find(item => item.name === entry.companyName);
+      const savedTarget = entry.companyName === null
+        ? (() => {
+            const requirements = {};
+            extractSkillsFromText(entry.jobDescText || '').forEach(skillKey => requirements[skillKey] = 1);
+            return { requirements };
+          })()
+        : (company && ROLES[entry.roleKey] ? buildTarget(company, entry.roleKey) : null);
+
+      if (savedTarget) {
+        const haveSkills = [...(entry.foundSkills || []), ...entry.learnedSkills];
+        entry.score = calculateMatchScore(savedTarget, haveSkills);
+        entry.missingSkills = Object.keys(savedTarget.requirements).filter(skillKey => !haveSkills.includes(skillKey));
+      }
+
+      renderHistory();
+      const progress = { learnedSkills: entry.learnedSkills, missingSkills: entry.missingSkills, score: entry.score };
+      queueSave(() => api('PUT', '/api/history/' + encodeURIComponent(entry.id), progress));
+    }
+
+    /* ---- history: showing it ---- */
+
+    function renderHistory() {
+      const entries = historyEntries;
+      const summaryEl = selectElement('#historySummary');
+      const listEl = selectElement('#historyList');
+      selectElement('#historyFooter').hidden = entries.length === 0;
+
+      if (!entries.length) {
+        summaryEl.textContent = historyLoading
+          ? 'Loading your history…'
+          : 'Nothing saved yet. Every resume you analyse is saved here automatically.';
+        listEl.innerHTML = '';
+        return;
+      }
+
+      const scores = entries.map(entry => Number(entry.score) || 0);
+      summaryEl.textContent =
+        entries.length + ' saved ' + (entries.length === 1 ? 'analysis' : 'analyses') +
+        '. Latest score ' + scores[0] + '%, best ' + Math.max(...scores) + '%. ' +
+        'Open one to reload its resume and target.';
+
+      listEl.innerHTML = entries.map(entry => {
+        const score = Math.max(0, Math.min(100, Number(entry.score) || 0));
+        const foundCount = (entry.foundSkills || []).length;
+        const learnedCount = (entry.learnedSkills || []).length;
+        const gapCount = (entry.missingSkills || []).length;
+        const isOpenNow = entry.id === appState.currentEntryId;
+        return `<div class="history-item">
+            <div>
+              <div class="history-title">${escapeHtml(entry.targetName || 'Analysis')}${isOpenNow ? '<em class="badge">open now</em>' : ''}</div>
+              <div class="history-meta">${escapeHtml(formatDate(entry.createdAt))} · ${foundCount} skill${foundCount === 1 ? '' : 's'} found${
+                learnedCount ? ' · ' + learnedCount + ' marked learned' : ''} · ${gapCount} gap${gapCount === 1 ? '' : 's'} left</div>
+            </div>
+            <div class="history-score">
+              <div class="mini-bar"><i style="width:${score}%"></i></div>
+              <b>${score}%</b>
+            </div>
+            <div class="history-actions">
+              <button class="link-button" type="button" data-action="open" data-id="${escapeHtml(entry.id)}">Open</button>
+              <button class="link-button" type="button" data-action="delete" data-id="${escapeHtml(entry.id)}">Delete</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // reload a saved analysis: resume, target, skills you had ticked, and the results
+    function openHistoryEntry(entryId) {
+      const entry = historyEntries.find(item => item.id === entryId);
+      if (!entry) return;
+
+      selectElement('#resumeText').value = entry.resumeText || '';
+      selectElement('#jobDescText').value = entry.jobDescText || '';
+
+      const isCustom = !entry.companyName;
+      const companyIndex = COMPANIES.findIndex(company => company.name === entry.companyName);
+      selectElement('#companySelect').value = isCustom ? 'custom' : String(companyIndex >= 0 ? companyIndex : 0);
+      selectElement('#jobDescWrapper').hidden = !isCustom;
+      selectElement('#roleWrapper').hidden = isCustom;
+      if (!isCustom) {
+        fillRoleOptionsForSelectedCompany();
+        if (entry.roleKey) selectElement('#roleSelect').value = entry.roleKey;
+      }
+
+      appState.foundSkills = (entry.foundSkills || []).filter(skillKey => SKILLS[skillKey]);
+      appState.learnedSkills = new Set((entry.learnedSkills || []).filter(skillKey => SKILLS[skillKey]));
+      appState.cgpa = typeof entry.cgpa === 'number' ? entry.cgpa : null;
+      appState.currentEntryId = entry.id;
+
+      selectElement('#errorMessage').textContent = '';
+      selectElement('#fileStatus').style.color = 'var(--color-success)';
+      selectElement('#fileStatus').textContent = 'Loaded your analysis from ' + formatDate(entry.createdAt);
+
+      selectElement('#resultsSection').hidden = false;
+      renderResults();
+      renderHistory();
+      selectElement('#resultTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function deleteHistoryEntry(entryId) {
+      historyEntries = historyEntries.filter(entry => entry.id !== entryId);
+      if (appState.currentEntryId === entryId) appState.currentEntryId = null;   // stop saving this analysis
+      renderHistory();
+      selectElement('#historyTitle').focus();
+      queueSave(() => api('DELETE', '/api/history/' + encodeURIComponent(entryId)));
+    }
+
+    selectElement('#historyList').onclick = event => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      if (button.dataset.action === 'open') openHistoryEntry(button.dataset.id);
+      if (button.dataset.action === 'delete') deleteHistoryEntry(button.dataset.id);
+    };
+
+    selectElement('#clearHistoryButton').onclick = () => {
+      if (!confirm('Delete all saved history for this account? This cannot be undone.')) return;
+      historyEntries = [];
+      appState.currentEntryId = null;
+      renderHistory();
+      selectElement('#historyTitle').focus();
+      queueSave(() => api('DELETE', '/api/history'));
+    };
+
+    /* ---- start-up: if the server already knows this browser, skip the sign-in screen ---- */
+
+    (async function startUp() {
+      try {
+        const data = await api('GET', '/api/me');
+        await startSession(data.user);
+      } catch (error) {
+        if (error.status !== 401) selectElement('#serverWarning').hidden = false;   // 401 just means "not signed in"
+        showSignedOutScreen();
+      }
+    })();
+  </script>
+
+</body>
+
+</html>

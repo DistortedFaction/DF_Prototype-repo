@@ -1,0 +1,13 @@
+{
+  "name": "placement-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "College Placement Tracker with student accounts and saved history",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
